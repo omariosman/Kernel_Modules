@@ -7,6 +7,8 @@
 
 MODULE_LICENSE("GPL");
 
+#define EOK 0
+
 volatile static int is_open = 0;
 
 static char message[1024];
@@ -22,8 +24,8 @@ ssize_t read_from_file_until (struct file* filep, char __user* outb, size_t nbyt
 		return 0;
 	}
 	while ((bytes_read < nbytes) && (*offset < num_bytes)){
-		put_user(&message[*offset], &outb[bytes_read]);
-		*offset++;
+		put_user(message[*offset], &outb[bytes_read]);
+		*offset = *offset + 1;
 		bytes_read++;
 	}
 	return bytes_read;
@@ -35,6 +37,7 @@ int open_file_for_read (struct inode *inodep, struct file * filep){
 		printk(KERN_INFO "Already Open\n");
 		return -EBUSY;
 	}
+
 	is_open = 1;
 	try_module_get(THIS_MODULE);
 	return 0;
@@ -56,7 +59,7 @@ struct file_operations fops = {
 	release: close_file
 };
 
-int devnum;
+static int devnum;
 static int hello_init(void){
 	
 	printk(KERN_ALERT "Hello CSCE-3402 :)\n");
@@ -64,7 +67,7 @@ static int hello_init(void){
 	strncpy(message, "Test msg", 1024);
 	num_bytes = strlen(message);
 
-	devnum = register_chrdev(0, "Read File", &fops);
+	devnum = register_chrdev(0, "ReadFile1", &fops);
 	printk("Dev num: %d\n", devnum);
 	//display();
 	return 0;
