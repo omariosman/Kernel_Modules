@@ -7,6 +7,7 @@ MODULE_LICENSE("GPL");
 int counter = 0;
 char *msg;
 
+
 module_param(counter, int, S_IRUSR | S_IWUSR);
 module_param(msg, charp, 0);
 
