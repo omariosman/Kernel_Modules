@@ -897,6 +897,14 @@ deps_/root/mgnm/Kernel_Modules/Read2.o := \
   /usr/src/linux-headers-4.19.0-13-common/arch/x86/include/asm/cacheflush.h \
   /usr/src/linux-headers-4.19.0-13-common/include/asm-generic/cacheflush.h \
   /usr/src/linux-headers-4.19.0-13-common/include/linux/hugetlb_inline.h \
+  /usr/src/linux-headers-4.19.0-13-common/include/linux/slab.h \
+    $(wildcard include/config/debug/slab.h) \
+    $(wildcard include/config/failslab.h) \
+    $(wildcard include/config/have/hardened/usercopy/allocator.h) \
+    $(wildcard include/config/slab.h) \
+    $(wildcard include/config/slub.h) \
+    $(wildcard include/config/slob.h) \
+  /usr/src/linux-headers-4.19.0-13-common/include/linux/kasan.h \
 
 /root/mgnm/Kernel_Modules/Read2.o: $(deps_/root/mgnm/Kernel_Modules/Read2.o)
 

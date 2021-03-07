@@ -26,6 +26,9 @@ static const struct modversion_info ____versions[]
 __used
 __attribute__((section("__versions"))) = {
 	{ 0x7ba62dba, "module_layout" },
+	{ 0x37a0cba, "kfree" },
+	{ 0x1ce1ab25, "kmem_cache_alloc_trace" },
+	{ 0x3a8870f8, "kmalloc_caches" },
 	{ 0x7c32d0f0, "printk" },
 	{ 0x76563f1d, "vfs_read" },
 	{ 0xd1b70d02, "filp_close" },
