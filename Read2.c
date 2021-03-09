@@ -10,81 +10,83 @@
 
 MODULE_LICENSE("GPL");
 
-struct file *open_file_for_read(const char *path){
-	struct file *filp = NULL;
-	mm_segment_t oldfs;
+struct myfile{
+	struct file*f;
+	mm_segment_t fs;
+	loff_t pos;
+};
+
+struct myfile *open_file_for_read(char *filename){
+	struct myfile *myfile_obj;
+	myfile_obj = kmalloc(sizeof(struct myfile), GFP_KERNEL);
+
+	
+	
 	int err = 0;
 
-	oldfs = get_fs();
+	myfile_obj->fs = get_fs();
 	set_fs(get_ds());
-	filp = filp_open(path, 0,0);
+	myfile_obj->f = filp_open(filename, O_RDONLY,0);
+	myfile_obj->pos = 0;
 
-	set_fs(oldfs);
 
-	if(IS_ERR(filp)){
-		err = PTR_ERR(filp);
+	set_fs(myfile_obj->fs);
+
+	if(IS_ERR(myfile_obj->f)){
+		err = PTR_ERR(myfile_obj->f);
 		return NULL;
 	}
 
-	return filp;
+	return myfile_obj;
 
 }
 
-void close_file(struct file *file){
-	filp_close(file, NULL);
+void close_file(struct myfile *mf){
+	filp_close(mf->f, NULL);
+	kfree(mf);
 }
 
-int read_from_file_until(struct file *file, unsigned long long offset, unsigned char *data, unsigned int size){
-	mm_segment_t oldfs;
-	int ret;
-
-	oldfs = get_fs();
+int read_from_file_until(struct myfile *mf, char *buf, unsigned long vlen, char c){
+	
+	int ret = 0;
+	mf->fs = get_fs();
 	set_fs(get_ds());
+	
+	int i;
+	for (i = 0; i < vlen; i++){
+		ret = vfs_read(mf->f, buf + i,1, &(mf->pos));
+		if ((buf[i] == c) || (buf[i]) == '\0'){
+			break;
+		}
+	}
 
-	ret = vfs_read(file, data, size, &offset);
-
-	set_fs(oldfs);
+	i++;
+	buf[i] = '\0';
+	set_fs(mf->fs);
 	return ret;
 	
 }
 
 struct file *fp;
 static int hello_init(void){
-	printk(KERN_ALERT "Hello CSCE-3402 :)\n");
 
-	fp = open_file_for_read("/proc/version");
+	struct myfile* mf = open_file_for_read("/proc/version");
 	char *data;
 	data = kmalloc(sizeof(char), GFP_KERNEL);
-	char *linux_version;
-	linux_version = kmalloc(sizeof(char), GFP_KERNEL);
-	read_from_file_until(fp, 0, data, 1024);
-	printk("Content: %s\n", data);
-	close_file(fp);
-	int i;
-	int space_counter = 0;
-	int k = 0;
-	for (i = 0; i < strlen(data); i++){	
-		if (data[i] == ' '){
-			space_counter++;
-		}
-		if (space_counter==2){
-			if (data[i] == ' '){
-				linux_version[k] = data[i+1];
-			} else {
-				linux_version[k] = data[i];
-			}
-			k++;
-		}
-		
-	}
-	printk("My Linux version: %s\n", linux_version);
-	kfree(linux_version);
+	read_from_file_until(mf, data, 1024, ' ');
+	read_from_file_until(mf, data, 1024, ' ');
+	read_from_file_until(mf, data, 1024, ' ');
+
+	printk("Kernel Version: %s\n", data);
+	close_file(mf);
 	kfree(data);
 	return 0;
 }
 
 static void hello_exit(void){
+
 	printk(KERN_ALERT "Bye Bye CSCE-3402 :)\n");
+	
 }
 
 module_init(hello_init);
